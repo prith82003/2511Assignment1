@@ -13,6 +13,9 @@ import unsw.utils.Angle;
  * signatures
  */
 public class BlackoutController {
+    private List<Device> devices = new ArrayList<Device>();
+    private List<Satellite> satellites = new ArrayList<Satellite>();
+
     public void createDevice(String deviceId, String type, Angle position) {
         // TODO: Task 1a)
     }
