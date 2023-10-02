@@ -1,9 +1,15 @@
 package unsw.blackout;
 
-public class Device {
-    private final int range;
+import unsw.utils.Angle;
 
-    protected Device(int range) {
-        this.range = range;
+public abstract class Device extends Entity {
+    protected Device(String deviceId, Angle position, int range) {
+        super(deviceId, position, range);
+    }
+
+    public void addFile(File file) {
+        var files = getFiles();
+        files.put(file.getName(), file);
+        setFiles(files);
     }
 }
