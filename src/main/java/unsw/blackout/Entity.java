@@ -47,10 +47,9 @@ public abstract class Entity {
         this.files = files;
     }
 
-    public File addFile(String name, int size) {
+    public void addFile(String name, int size) {
         File f = new File(name, "", size);
         files.put(f.getName(), f);
-        return f;
     }
 
     public void removeFile(String name) {

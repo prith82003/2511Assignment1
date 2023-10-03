@@ -45,10 +45,6 @@ public final class FileIO {
         destFile.appendContent(content);
     }
 
-    public void close() {
-        destFile.fileComplete();
-    }
-
     public void delete() {
         dest.removeFile(destFile.getName());
     }

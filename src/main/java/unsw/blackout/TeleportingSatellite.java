@@ -23,14 +23,14 @@ public class TeleportingSatellite extends Satellite {
         double angularVelocity = linearVelocity / getHeight();
         Angle position = getPosition();
 
-        if (position.toDegrees() == 180) {
+        if (moveAntiClockwise)
+            position = position.add(Angle.fromRadians(angularVelocity));
+        else
+            position = position.subtract(Angle.fromRadians(angularVelocity));
+
+        if (position.toDegrees() >= 180 && moveAntiClockwise || position.toDegrees() <= 180 && !moveAntiClockwise) {
             position = Angle.fromDegrees(0);
             moveAntiClockwise = !moveAntiClockwise;
-        } else {
-            if (moveAntiClockwise)
-                position = position.add(Angle.fromRadians(angularVelocity));
-            else
-                position = position.subtract(Angle.fromRadians(angularVelocity));
         }
 
         setPosition(position);

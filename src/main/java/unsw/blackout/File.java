@@ -5,7 +5,6 @@ import unsw.response.models.FileInfoResponse;
 public class File {
     private final String name;
     private String content;
-    private boolean isFinished = false;
 
     // The number of bytes the complete file has
     private int completeBytes;
@@ -14,7 +13,6 @@ public class File {
         this.name = name;
         this.content = content;
         this.completeBytes = completeBytes;
-        isFinished = false;
     }
 
     public int getNumBytes() {
@@ -41,15 +39,13 @@ public class File {
         this.content += content;
     }
 
-    public void fileComplete() {
-        this.isFinished = true;
-    }
-
     public boolean isFinished() {
+        System.out.println("getNumBytes(): " + getNumBytes() + ", getCompleteBytes(): " + getCompleteBytes());
+
         return getNumBytes() == getCompleteBytes();
     }
 
     public FileInfoResponse getInfo() {
-        return new FileInfoResponse(this.name, this.content, this.completeBytes, this.isFinished);
+        return new FileInfoResponse(this.name, this.content, this.completeBytes, this.isFinished());
     }
 }

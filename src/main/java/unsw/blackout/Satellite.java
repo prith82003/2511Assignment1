@@ -45,39 +45,34 @@ public abstract class Satellite extends Entity {
     }
 
     private void transferFiles() {
-        for (int i = 0; i < fr.size(); i++) {
-            FileWriter writer = fw.get(i);
+        for (int i = 0; i < fileIOs.size(); i++) {
+            FileIO fileIO = fileIOs.get(i);
 
-            if (!writer.canTransfer()) {
-                // TODO: Handle Teleport Case
-
-                writer.delete();
-                fr.remove(i);
-                fw.remove(i);
+            if (!fileIO.canTransfer()) {
+                fileIO.delete();
+                fileIOs.remove(i);
                 i--;
             }
         }
 
-        if (fr.isEmpty() || fw.isEmpty())
+        if (fileIOs.isEmpty())
             return;
 
-        int bytesOut = maxBytesOutPerMin / fw.size();
-        int bytesIn = maxBytesInPerMin / fr.size();
+        int bytesOut = maxBytesOutPerMin / fileIOs.size();
+        int bytesIn = maxBytesInPerMin / fileIOs.size();
 
-        for (int i = 0; i < fw.size(); i++) {
-            FileWriter writer = fw.get(i);
-            FileReader reader = fr.get(i);
+        for (int i = 0; i < fileIOs.size(); i++) {
+            FileIO fileIO = fileIOs.get(i);
 
-            if (reader.fileComplete()) {
-                writer.close();
-                fr.remove(i);
-                fw.remove(i);
+            if (fileIO.isFileComplete()) {
+                System.out.println("File Transfer Complete");
+                fileIOs.remove(i);
                 i--;
                 continue;
             }
 
             int readBytes = Math.min(bytesIn, bytesOut);
-            writer.write(reader.read(readBytes));
+            fileIO.transferContent(readBytes);
         }
     }
 
@@ -85,14 +80,12 @@ public abstract class Satellite extends Entity {
         if (!canTransfer(source, dest))
             return;
 
-        fr.add(new FileReader(f, source, dest));
-        fw.add(new FileWriter(dest.addFile(f.getName(), f.getNumBytes()), source, dest));
+        dest.addFile(f.getName(), f.getNumBytes());
+        fileIOs.add(new FileIO(f.getName(), source, dest));
     }
 
     public boolean hasBandwidth() {
-        if (fr.size() >= maxBytesInPerMin || fw.size() >= maxBytesOutPerMin) {
-            System.out.println(getId() + " has no bandwidth, reading: " + fr.size() + ", writing: " + fw.size());
-
+        if (fileIOs.size() >= maxBytesInPerMin || fileIOs.size() >= maxBytesOutPerMin) {
             return false;
         }
 
@@ -101,6 +94,14 @@ public abstract class Satellite extends Entity {
 
     public boolean isStorageFull() {
         if (getFiles().size() >= maxFiles)
+            return true;
+
+        int totalBytes = 0;
+        for (var f : getFiles().entrySet()) {
+            totalBytes += f.getValue().getCompleteBytes();
+        }
+
+        if (totalBytes >= maxBytes)
             return true;
 
         return false;
