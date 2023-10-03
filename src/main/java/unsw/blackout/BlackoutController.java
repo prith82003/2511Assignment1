@@ -19,18 +19,23 @@ import unsw.utils.Angle;
  * signatures
  */
 public class BlackoutController {
-    private Dictionary<String, Device> devices = new Hashtable<>();
-    private Dictionary<String, Satellite> satellites = new Hashtable<>();
+    private Dictionary<String, Device> devices;
+    private Dictionary<String, Satellite> satellites;
 
     private List<Entity> entities = new ArrayList<>();
 
+    public BlackoutController() {
+        devices = new Hashtable<>();
+        satellites = new Hashtable<>();
+    }
+
     public void createDevice(String deviceId, String type, Angle position) {
         Device newDevice = null;
-        if (type == "HandheldDevice") {
+        if (type.equals("HandheldDevice")) {
             newDevice = new HandheldDevice(deviceId, position);
-        } else if (type == "LaptopDevice") {
+        } else if (type.equals("LaptopDevice")) {
             newDevice = new LaptopDevice(deviceId, position);
-        } else if (type == "DesktopDevice") {
+        } else if (type.equals("DesktopDevice")) {
             newDevice = new DesktopDevice(deviceId, position);
         }
 
@@ -40,17 +45,20 @@ public class BlackoutController {
 
     public void removeDevice(String deviceId) {
         devices.remove(deviceId);
+        entities.removeIf(e -> e.getId().equals(deviceId));
     }
 
     public void createSatellite(String satelliteId, String type, double height, Angle position) {
         Satellite newSatellite = null;
-        if (type == "StandardSatellite") {
+        if (type.equals("StandardSatellite")) {
             newSatellite = new StandardSatellite(satelliteId, height, position);
-        } else if (type == "RelaySatellite") {
+        } else if (type.equals("RelaySatellite")) {
             newSatellite = new RelaySatellite(satelliteId, height, position);
-        } else if (type == "TeleportingSatellite") {
+        } else if (type.equals("TeleportingSatellite")) {
             newSatellite = new TeleportingSatellite(satelliteId, height, position);
         }
+
+        System.out.println("Type: " + type);
 
         satellites.put(satelliteId, newSatellite);
         entities.add(newSatellite);
@@ -58,6 +66,7 @@ public class BlackoutController {
 
     public void removeSatellite(String satelliteId) {
         satellites.remove(satelliteId);
+        entities.removeIf(e -> e.getId().equals(satelliteId));
     }
 
     public List<String> listDeviceIds() {
@@ -69,7 +78,7 @@ public class BlackoutController {
     }
 
     public void addFileToDevice(String deviceId, String filename, String content) {
-        devices.get(deviceId).addFile(new File(filename, content));
+        devices.get(deviceId).addFile(new File(filename, content, content.length()));
     }
 
     public EntityInfoResponse getInfo(String id) {
@@ -122,6 +131,7 @@ public class BlackoutController {
 
     public void sendFile(String fileName, String fromId, String toId) throws FileTransferException {
         Entity source = entities.stream().filter(e -> e.getId().equals(fromId)).findFirst().orElse(null);
+        System.out.println("RUnning FUNCTION SJDFKJSHDKFSDHJFKSDHJFKSD1");
 
         File file = null;
         for (Map.Entry<String, File> entry : source.getFiles().entrySet()) {

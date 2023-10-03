@@ -16,4 +16,8 @@ public class FileWriter extends FileIO {
     public void close() {
         f.fileComplete();
     }
+
+    public void delete() {
+        dest.removeFile(f.getName());
+    }
 }

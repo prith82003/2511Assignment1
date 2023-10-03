@@ -22,7 +22,7 @@ public class FileReader extends FileIO {
         return content;
     }
 
-    public boolean canTransfer() {
-        return Math.abs(source.getHeight() - (dest.getHeight())) <= source.getRange();
+    public boolean fileComplete() {
+        return offset >= f.getNumBytes();
     }
 }

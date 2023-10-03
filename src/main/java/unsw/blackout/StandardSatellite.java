@@ -14,4 +14,9 @@ public class StandardSatellite extends Satellite {
         super(satelliteId, height, position, STANDARD_VELOCITY, STANDARD_RANGE, STANDARD_MAX_FILES, STANDARD_MAX_BYTES,
                 STANDARD_MAX_BYTES_INOUT_PER_MIN, STANDARD_MAX_BYTES_INOUT_PER_MIN);
     }
+
+    @Override
+    protected boolean canTransfer(Entity source, Entity dest) {
+        return !(source instanceof DesktopDevice || dest instanceof DesktopDevice);
+    }
 }

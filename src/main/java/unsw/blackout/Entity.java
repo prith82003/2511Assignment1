@@ -32,9 +32,9 @@ public abstract class Entity {
     public Map<String, FileInfoResponse> getFileResponses() {
         Map<String, FileInfoResponse> fileResponses = new Hashtable<>();
         for (Map.Entry<String, File> entry : files.entrySet()) {
-            var fileInfo = new FileInfoResponse(entry.getKey(), entry.getValue().getAllContent(),
-                    entry.getValue().getNumBytes(), true);
-            fileResponses.put(entry.getKey(), fileInfo);
+            // var fileInfo = new FileInfoResponse(entry.getKey(), entry.getValue().getAllContent(),
+            //         entry.getValue().getCompleteBytes(), entry.getValue().isFinished());
+            fileResponses.put(entry.getKey(), entry.getValue().getInfo());
         }
         return fileResponses;
     }
@@ -43,10 +43,14 @@ public abstract class Entity {
         this.files = files;
     }
 
-    public File addFile(String name) {
-        File f = new File(name, "");
+    public File addFile(String name, int size) {
+        File f = new File(name, "", size);
         files.put(f.getName(), f);
         return f;
+    }
+
+    public void removeFile(String name) {
+        files.remove(name);
     }
 
     public String getId() {
