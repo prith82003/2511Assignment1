@@ -26,7 +26,11 @@ public abstract class Entity {
     }
 
     protected Map<String, File> getFiles() {
-        return files;
+        return this.files;
+    }
+
+    public File getFile(String name) {
+        return files.get(name);
     }
 
     public Map<String, FileInfoResponse> getFileResponses() {

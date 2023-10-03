@@ -12,8 +12,7 @@ public abstract class Satellite extends Entity {
     protected final int maxBytesOutPerMin;
     protected final int maxBytesInPerMin;
 
-    private List<FileReader> fr = new ArrayList<FileReader>();
-    private List<FileWriter> fw = new ArrayList<FileWriter>();
+    private List<FileIO> fileIOs = new ArrayList<>();
 
     public Satellite(String satelliteId, double height, Angle position, int linearVelocity, int range, int maxFiles,
             int maxBytes, int bytesIn, int bytesOut) {
@@ -32,7 +31,7 @@ public abstract class Satellite extends Entity {
 
         updatePosition();
 
-        if (!fw.isEmpty())
+        if (!fileIOs.isEmpty())
             transferFiles();
     }
 

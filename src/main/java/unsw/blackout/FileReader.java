@@ -1,4 +1,4 @@
-package unsw.blackout;
+/* package unsw.blackout;
 
 public class FileReader extends FileIO {
     private int offset;
@@ -26,3 +26,4 @@ public class FileReader extends FileIO {
         return offset >= f.getNumBytes();
     }
 }
+ */

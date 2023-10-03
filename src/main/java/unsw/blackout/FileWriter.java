@@ -1,4 +1,4 @@
-package unsw.blackout;
+/* package unsw.blackout;
 
 public class FileWriter extends FileIO {
     public FileWriter(File f, Entity source, Entity dest) {
@@ -21,3 +21,4 @@ public class FileWriter extends FileIO {
         dest.removeFile(f.getName());
     }
 }
+ */
