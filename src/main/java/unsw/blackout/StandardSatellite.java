@@ -16,7 +16,12 @@ public class StandardSatellite extends Satellite {
     }
 
     @Override
-    protected boolean canTransfer(Entity source, Entity dest) {
-        return !(source instanceof DesktopDevice || dest instanceof DesktopDevice);
+    protected void updatePosition() {
+        double angularVelocity = linearVelocity / getHeight();
+        Angle position = getPosition();
+
+        position = position.subtract(Angle.fromRadians(angularVelocity));
+
+        setPosition(position);
     }
 }

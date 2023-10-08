@@ -6,7 +6,6 @@ public class File {
     private final String name;
     private String content;
 
-    // The number of bytes the complete file has
     private int completeBytes;
 
     public File(String name, String content, int completeBytes) {
@@ -35,13 +34,17 @@ public class File {
         return this.name;
     }
 
+    public void setContent(String content) {
+        System.out.println("Content Set to: " + content);
+        this.content = content;
+        this.completeBytes = content.length();
+    }
+
     public void appendContent(String content) {
         this.content += content;
     }
 
     public boolean isFinished() {
-        System.out.println("getNumBytes(): " + getNumBytes() + ", getCompleteBytes(): " + getCompleteBytes());
-
         return getNumBytes() == getCompleteBytes();
     }
 

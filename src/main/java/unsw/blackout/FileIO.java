@@ -1,31 +1,28 @@
 package unsw.blackout;
 
-import unsw.utils.MathsHelper;
-
 public final class FileIO {
     private final File sourceFile;
     private final File destFile;
 
-    private final Entity source;
-    private final Entity dest;
+    private Connection connection;
 
     private int offset;
 
-    protected FileIO(String filename, Entity source, Entity dest) {
-        sourceFile = source.getFile(filename);
-        destFile = dest.getFile(filename);
+    protected FileIO(String filename, Connection connection) {
+        this.connection = connection;
 
-        this.source = source;
-        this.dest = dest;
+        sourceFile = connection.getSource().getFile(filename);
+        destFile = connection.getDest().getFile(filename);
 
         offset = 0;
     }
 
+    public String getFilename() {
+        return sourceFile.getName();
+    }
+
     public boolean canTransfer() {
-        return (MathsHelper.getDistance(source.getHeight(), source.getPosition(), dest.getHeight(),
-                dest.getPosition()) <= source.getRange())
-                && MathsHelper.isVisible(source.getHeight(), source.getPosition(), dest.getHeight(),
-                        dest.getPosition());
+        return connection.canTransferNow();
     }
 
     public void transferContent(int numBytes) {
@@ -46,10 +43,18 @@ public final class FileIO {
     }
 
     public void delete() {
-        dest.removeFile(destFile.getName());
+        connection.getDest().removeFile(destFile.getName());
     }
 
     public boolean isFileComplete() {
         return destFile.isFinished();
+    }
+
+    public Entity getSource() {
+        return connection.getSource();
+    }
+
+    public Entity getDest() {
+        return connection.getDest();
     }
 }

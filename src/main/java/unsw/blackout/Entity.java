@@ -36,19 +36,17 @@ public abstract class Entity {
     public Map<String, FileInfoResponse> getFileResponses() {
         Map<String, FileInfoResponse> fileResponses = new Hashtable<>();
         for (Map.Entry<String, File> entry : files.entrySet()) {
-            // var fileInfo = new FileInfoResponse(entry.getKey(), entry.getValue().getAllContent(),
-            //         entry.getValue().getCompleteBytes(), entry.getValue().isFinished());
             fileResponses.put(entry.getKey(), entry.getValue().getInfo());
         }
         return fileResponses;
     }
 
-    protected void setFiles(Map<String, File> files) {
-        this.files = files;
-    }
-
     public void addFile(String name, int size) {
         File f = new File(name, "", size);
+        files.put(f.getName(), f);
+    }
+
+    public void addFile(File f) {
         files.put(f.getName(), f);
     }
 
@@ -78,5 +76,18 @@ public abstract class Entity {
 
     public String getType() {
         return this.getClass().getSimpleName();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Entity))
+            return false;
+
+        if (obj.getClass() != getClass())
+            return false;
+
+        Entity e = (Entity) obj;
+
+        return e.id.equals(id);
     }
 }

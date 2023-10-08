@@ -37,9 +37,4 @@ public class RelaySatellite extends Satellite {
 
         setPosition(position);
     }
-
-    @Override
-    protected boolean canTransfer(Entity source, Entity dest) {
-        return true;
-    }
 }
