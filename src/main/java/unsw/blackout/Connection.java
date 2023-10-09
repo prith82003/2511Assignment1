@@ -58,6 +58,8 @@ public final class Connection {
         if (needsRelay) {
             System.out.println("Transferring using Relay");
             RelaySatellite relay = BlackoutController.relaySatelliteInRange(source, dest);
+
+            // TODO: Implement Recursive Relay Searching
             if (relay != null) {
                 System.out.println("Relay Found: " + relay.getId() + " ?== " + this.relay.getId());
                 return relay.equals(this.relay);
