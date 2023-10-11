@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Map;
-
+import java.util.stream.Collectors;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -68,14 +68,13 @@ public class BlackoutController {
     public List<String> listDeviceIds() {
         return (Collections.list(entities.elements()).stream().filter(e -> e instanceof Device).map(e -> {
             return e.getId();
-        })).toList();
-
+        })).collect(Collectors.toList());
     }
 
     public List<String> listSatelliteIds() {
         return (Collections.list(entities.elements()).stream().filter(e -> e instanceof Satellite).map(e -> {
             return e.getId();
-        })).toList();
+        })).collect(Collectors.toList());
     }
 
     public void addFileToDevice(String deviceId, String filename, String content) {
