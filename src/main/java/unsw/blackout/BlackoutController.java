@@ -19,15 +19,10 @@ import unsw.utils.Angle;
  * signatures
  */
 public class BlackoutController {
-    private static Dictionary<String, Device> devices;
-    private static Dictionary<String, Satellite> satellites;
-
-    private static List<Entity> entities;
+    private static Dictionary<String, Entity> entities;
 
     public BlackoutController() {
-        devices = new Hashtable<>();
-        satellites = new Hashtable<>();
-        entities = new ArrayList<>();
+        entities = new Hashtable<>();
     }
 
     public void createDevice(String deviceId, String type, Angle position) {
@@ -40,17 +35,15 @@ public class BlackoutController {
             newDevice = new DesktopDevice(deviceId, position);
         }
 
-        devices.put(deviceId, newDevice);
-        entities.add(newDevice);
+        entities.put(deviceId, newDevice);
     }
 
     public void removeDevice(String deviceId) {
-        devices.remove(deviceId);
-        entities.removeIf(e -> e.getId().equals(deviceId));
+        entities.remove(deviceId);
     }
 
     public static boolean entityExists(String id) {
-        return devices.get(id) != null || satellites.get(id) != null;
+        return entities.get(id) != null;
     }
 
     public void createSatellite(String satelliteId, String type, double height, Angle position) {
@@ -61,31 +54,36 @@ public class BlackoutController {
             newSatellite = new RelaySatellite(satelliteId, height, position);
         } else if (type.equals("TeleportingSatellite")) {
             newSatellite = new TeleportingSatellite(satelliteId, height, position);
+        } else if (type.equals("ShrinkingSatellite")) {
+            newSatellite = new ShrinkingSatellite(satelliteId, height, position);
         }
 
-        satellites.put(satelliteId, newSatellite);
-        entities.add(newSatellite);
+        entities.put(satelliteId, newSatellite);
     }
 
     public void removeSatellite(String satelliteId) {
-        satellites.remove(satelliteId);
-        entities.removeIf(e -> e.getId().equals(satelliteId));
+        entities.remove(satelliteId);
     }
 
     public List<String> listDeviceIds() {
-        return Collections.list(devices.keys());
+        return (Collections.list(entities.elements()).stream().filter(e -> e instanceof Device).map(e -> {
+            return e.getId();
+        })).toList();
+
     }
 
     public List<String> listSatelliteIds() {
-        return Collections.list(satellites.keys());
+        return (Collections.list(entities.elements()).stream().filter(e -> e instanceof Satellite).map(e -> {
+            return e.getId();
+        })).toList();
     }
 
     public void addFileToDevice(String deviceId, String filename, String content) {
-        devices.get(deviceId).addFile(new File(filename, content, content.length()));
+        entities.get(deviceId).addFile(new File(filename, content, content.length()));
     }
 
     public EntityInfoResponse getInfo(String id) {
-        Entity entity = entities.stream().filter(e -> e.getId().equals(id)).findFirst().orElse(null);
+        Entity entity = entities.get(id);
 
         if (entity == null)
             return null;
@@ -98,8 +96,10 @@ public class BlackoutController {
     }
 
     public void simulate() {
-        for (Satellite s : Collections.list(satellites.elements())) {
-            s.simulate();
+        // Loop through each satellite
+        for (Entity e : Collections.list(entities.elements())) {
+            if (e instanceof Satellite)
+                ((Satellite) e).simulate();
         }
     }
 
@@ -114,15 +114,14 @@ public class BlackoutController {
     }
 
     public List<String> communicableEntitiesInRange(String id) {
-        Entity entity = entities.stream().filter(e -> e.getId().equals(id)).findFirst().orElse(null);
+        Entity entity = entities.get(id);
 
         if (entity == null)
             return null;
 
-        System.out.println("Checking Source: " + entity.getId());
         List<String> communicableEntities = new ArrayList<>();
 
-        for (Entity e : entities) {
+        for (Entity e : Collections.list(entities.elements())) {
             if (e.getId().equals(id))
                 continue;
 
@@ -136,19 +135,56 @@ public class BlackoutController {
         return communicableEntities;
     }
 
-    public static RelaySatellite relaySatelliteInRange(Entity source, Entity dest) {
-        for (Satellite s : Collections.list(satellites.elements())) {
-            if (s instanceof RelaySatellite) {
-                if (Helper.canCommunicate(source, s).canTransfer() && Helper.canCommunicate(s, dest).canTransfer())
-                    return (RelaySatellite) s;
+    public static boolean relaySatelliteInRange(Entity source, Entity dest) {
+        return relaySatelliteInRange(source, dest, false);
+    }
+
+    public static boolean relaySatelliteInRange(Entity source, Entity dest, boolean debug) {
+        List<RelaySatellite> relays = new ArrayList<>();
+        List<RelaySatellite> relayPath = new ArrayList<>();
+        var pathAvailable = checkRelayConnection(source, dest, relays, relayPath);
+        if (debug) {
+            System.out.print("Path Available: " + pathAvailable + ", " + source.getId() + " -> ");
+
+            for (RelaySatellite r : relayPath) {
+                System.out.print(r.getId() + " -> ");
+            }
+
+            System.out.println(dest.getId());
+        }
+
+        System.out.println("Checked Satellites: " + relays);
+
+        return pathAvailable;
+    }
+
+    private static boolean checkRelayConnection(Entity source, Entity dest, List<RelaySatellite> relays,
+            List<RelaySatellite> path) {
+        for (Entity e : source.getEntitiesInRange(Collections.list(entities.elements()))) {
+            if (e.getId().equals(dest.getId())) {
+                return true;
+            }
+
+            if (e instanceof RelaySatellite) {
+                RelaySatellite relay = (RelaySatellite) e;
+                if (relays.contains(relay))
+                    continue;
+
+                relays.add(relay);
+                path.add(relay);
+
+                if (checkRelayConnection(relay, dest, relays, path))
+                    return true;
+
+                path.remove(relay);
             }
         }
 
-        return null;
+        return false;
     }
 
     public void sendFile(String fileName, String fromId, String toId) throws FileTransferException {
-        Entity source = entities.stream().filter(e -> e.getId().equals(fromId)).findFirst().orElse(null);
+        Entity source = entities.get(fromId);
 
         File file = null;
         for (Map.Entry<String, File> entry : source.getFiles().entrySet()) {
@@ -160,7 +196,7 @@ public class BlackoutController {
         if (file == null)
             throw new FileTransferException.VirtualFileNotFoundException(fileName + " Not Found");
 
-        Entity dest = entities.stream().filter(e -> e.getId().equals(toId)).findFirst().orElse(null);
+        Entity dest = entities.get(toId);
 
         for (Map.Entry<String, File> entry : dest.getFiles().entrySet()) {
             if (entry.getKey().equals(fileName))

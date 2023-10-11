@@ -10,6 +10,7 @@ import unsw.response.models.FileInfoResponse;
 import unsw.utils.Angle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static blackout.TestHelpers.assertListAreEqualIgnoringOrder;
 
 import java.util.Arrays;
@@ -19,7 +20,7 @@ import static unsw.utils.MathsHelper.RADIUS_OF_JUPITER;
 
 @TestInstance(value = Lifecycle.PER_CLASS)
 
-public class Task1Tests {
+public class Task2Tests {
     public void initialiseTest(BlackoutController bc) {
         bc.createDevice("Device A", "HandheldDevice", Angle.fromDegrees(20));
         bc.createDevice("Device B", "LaptopDevice", Angle.fromDegrees(30));
@@ -55,41 +56,52 @@ public class Task1Tests {
     }
 
     @Test
-    public void testRemove() {
+    public void testRelayMovement() {
         var bc = new BlackoutController();
-        initialiseTest(bc);
 
-        bc.removeDevice("Device A");
-        var list = bc.listDeviceIds();
+        bc.createSatellite("relay sat A", "RelaySatellite", RADIUS_OF_JUPITER + 10_000, Angle.fromDegrees(320));
+        bc.createSatellite("relay sat B", "RelaySatellite", RADIUS_OF_JUPITER + 10_000, Angle.fromDegrees(345));
+        bc.createSatellite("relay sat C", "RelaySatellite", RADIUS_OF_JUPITER + 10_000, Angle.fromDegrees(20));
 
-        assertListAreEqualIgnoringOrder(list, Arrays.asList("Device B", "Device C", "Device D"));
+        bc.simulate();
 
-        bc.removeSatellite("Satellite A");
+        var relSatInfo = bc.getInfo("relay sat A");
 
-        bc.simulate(20);
+        assertTrue(relSatInfo.getPosition().toDegrees() < 320, "Relay Satellite A Movement Failed");
 
-        list = bc.listSatelliteIds();
+        relSatInfo = bc.getInfo("relay sat B");
 
-        assertListAreEqualIgnoringOrder(list, Arrays.asList("Satellite B", "Satellite C", "Satellite D"));
+        assertTrue(relSatInfo.getPosition().toDegrees() > 345, "Relay Satellite B Movement Failed");
+
+        relSatInfo = bc.getInfo("relay sat C");
+
+        assertTrue(relSatInfo.getPosition().toDegrees() > 20, "Relay Satellite C Movement Failed");
     }
 
     @Test
-    public void testAddFile() {
+    public void testTeleportingMovement() {
         var bc = new BlackoutController();
-        initialiseTest(bc);
 
-        bc.addFileToDevice("Device A", "file B", "Content");
-        // create fileResponses
-        var fileResponse = new FileInfoResponse("file B", "Content", 7, true);
-        var map = new HashMap<String, FileInfoResponse>();
-        map.put("file B", fileResponse);
-        map.put("file A", new FileInfoResponse("file A", "Content", 7, true));
-        map.put("empty file", new FileInfoResponse("empty file", "", 0, true));
+        bc.createSatellite("teleporting sat A", "TeleportingSatellite", RADIUS_OF_JUPITER + 10_000,
+                Angle.fromDegrees(320));
+        bc.createSatellite("teleporting sat B", "TeleportingSatellite", RADIUS_OF_JUPITER + 10_000,
+                Angle.fromDegrees(0));
+        bc.createSatellite("teleporting sat C", "TeleportingSatellite", RADIUS_OF_JUPITER + 10_000,
+                Angle.fromDegrees(180));
 
-        // create entityResponse
-        var entityResponse = new EntityInfoResponse("Device A", Angle.fromDegrees(20), RADIUS_OF_JUPITER,
-                "HandheldDevice", map);
+        bc.simulate();
 
-        assertEquals(entityResponse, bc.getInfo("Device A"), "Entity Response Failed");
+        var relSatInfo = bc.getInfo("teleporting sat A");
+
+        assertTrue(relSatInfo.getPosition().toDegrees() > 320, "Teleporting Satellite A Movement Failed");
+
+        relSatInfo = bc.getInfo("teleporting sat B");
+
+        assertTrue(relSatInfo.getPosition().toDegrees() > 0 && relSatInfo.getPosition().toDegrees() < 10,
+                "Teleporting Satellite B Movement Failed");
+
+        relSatInfo = bc.getInfo("teleporting sat C");
+
+        assertTrue(relSatInfo.getPosition().toDegrees() == 0, "Teleporting Satellite C Movement Failed");
     }
 }

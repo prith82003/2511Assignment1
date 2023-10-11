@@ -8,7 +8,7 @@ public final class FileIO {
 
     private int offset;
 
-    protected FileIO(String filename, Connection connection) {
+    public FileIO(String filename, Connection connection) {
         this.connection = connection;
 
         sourceFile = connection.getSource().getFile(filename);
@@ -23,6 +23,10 @@ public final class FileIO {
 
     public boolean canTransfer() {
         return connection.canTransferNow();
+    }
+
+    public Connection getConnection() {
+        return connection;
     }
 
     public void transferContent(int numBytes) {

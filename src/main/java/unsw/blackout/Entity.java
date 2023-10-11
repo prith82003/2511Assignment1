@@ -1,14 +1,17 @@
 package unsw.blackout;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 import unsw.response.models.FileInfoResponse;
 import unsw.utils.Angle;
+import unsw.utils.MathsHelper;
 
 public abstract class Entity {
     private final String id;
-    private double height;
+    private final double height;
     private Angle position;
     private final int range;
 
@@ -39,6 +42,24 @@ public abstract class Entity {
             fileResponses.put(entry.getKey(), entry.getValue().getInfo());
         }
         return fileResponses;
+    }
+
+    public List<Entity> getEntitiesInRange(List<Entity> entities) {
+        List<Entity> entitiesInRange = new ArrayList<>();
+        for (Entity e : entities) {
+            if (e.getId().equals(id))
+                continue;
+
+            if (isInRange(e))
+                entitiesInRange.add(e);
+        }
+        return entitiesInRange;
+    }
+
+    private boolean isInRange(Entity e) {
+        double distance = MathsHelper.getDistance(height, position, e.getHeight(), e.getPosition());
+        boolean isVisible = MathsHelper.isVisible(height, position, e.getHeight(), e.getPosition());
+        return distance <= range && isVisible;
     }
 
     public void addFile(String name, int size) {

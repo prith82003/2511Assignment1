@@ -32,21 +32,12 @@ public final class Helper {
         System.out.println("Connection: " + source.getId() + " -> " + dest.getId() + " InRange: "
                 + (dist <= source.getRange()) + " Visible: " + visible);
 
+        // Handle Multiple Relays in Connection
         boolean canTransfer = dist <= source.getRange() && visible;
-        boolean needsRelay = false;
-        RelaySatellite relay = null;
-        if (!canTransfer && checkRelay) {
-            relay = BlackoutController.relaySatelliteInRange(source, dest);
-            if (relay != null) {
-                canTransfer = true;
-                needsRelay = true;
+        if (!canTransfer && checkRelay)
+            canTransfer = BlackoutController.relaySatelliteInRange(source, dest, true);
 
-                System.out.println(
-                        "Using Relay, Connection: " + source.getId() + " -> " + relay.getId() + " -> " + dest.getId());
-            }
-        }
-
-        return new Connection(source, dest, relay, canTransfer, needsRelay);
+        return new Connection(source, dest, canTransfer);
     }
 
     /**

@@ -41,10 +41,10 @@ public class TeleportingSatellite extends Satellite {
     }
 
     private boolean checkTeleport(double position) {
-        if (prevPosition < 180 && position >= 180 && moveAntiClockwise)
+        if (prevPosition <= 180 && position >= 180 && moveAntiClockwise)
             return true;
 
-        if (prevPosition > 180 && position <= 180 && !moveAntiClockwise)
+        if (prevPosition >= 180 && position <= 180 && !moveAntiClockwise)
             return true;
 
         return false;

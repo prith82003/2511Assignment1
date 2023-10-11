@@ -7,8 +7,8 @@ public class RelaySatellite extends Satellite {
     private static final int RELAY_RANGE = 300000;
     private static final int RELAY_MAX_FILES = 0;
     private static final int RELAY_MAX_BYTES = 0;
-    private static final int RELAY_MAX_BYTES_IN_PER_MIN = 15;
-    private static final int RELAY_MAX_BYTES_OUT_PER_MIN = 10;
+    private static final int RELAY_MAX_BYTES_IN_PER_MIN = 0;
+    private static final int RELAY_MAX_BYTES_OUT_PER_MIN = 0;
 
     private boolean moveAntiClockwise = false;
 
@@ -22,13 +22,7 @@ public class RelaySatellite extends Satellite {
         double angularVelocity = linearVelocity / getHeight();
         Angle position = getPosition();
 
-        if (position.toDegrees() > 190) {
-            if (position.toDegrees() < 345)
-                moveAntiClockwise = false;
-            else
-                moveAntiClockwise = true;
-        } else if (position.toDegrees() < 140)
-            moveAntiClockwise = true;
+        checkBounds(position);
 
         if (moveAntiClockwise)
             position = position.add(Angle.fromRadians(angularVelocity));
@@ -36,5 +30,20 @@ public class RelaySatellite extends Satellite {
             position = position.subtract(Angle.fromRadians(angularVelocity));
 
         setPosition(position);
+    }
+
+    private void checkBounds(Angle position) {
+        if (position.toDegrees() > 190) {
+            if (position.toDegrees() < 345)
+                moveAntiClockwise = false;
+            else
+                moveAntiClockwise = true;
+        } else if (position.toDegrees() < 140)
+            moveAntiClockwise = true;
+    }
+
+    @Override
+    public String toString() {
+        return getId();
     }
 }

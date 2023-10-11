@@ -22,12 +22,12 @@ public class File {
         return this.completeBytes;
     }
 
-    public String getContent(int start, int end) {
-        return this.content.substring(start, end);
+    public String getContent() {
+        return this.content;
     }
 
-    public String getAllContent() {
-        return this.content;
+    public String getContent(int start, int end) {
+        return this.content.substring(start, end);
     }
 
     public String getName() {
@@ -35,9 +35,15 @@ public class File {
     }
 
     public void setContent(String content) {
+        setContent(content, true);
+    }
+
+    public void setContent(String content, boolean changeCompleteBytes) {
         System.out.println("Content Set to: " + content);
         this.content = content;
-        this.completeBytes = content.length();
+
+        if (changeCompleteBytes)
+            this.completeBytes = content.length();
     }
 
     public void appendContent(String content) {

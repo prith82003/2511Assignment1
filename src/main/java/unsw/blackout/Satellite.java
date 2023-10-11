@@ -25,19 +25,34 @@ public abstract class Satellite extends Entity {
     }
 
     public void simulate() {
-        Angle position = getPosition();
-        var angle = position.toDegrees() % 360;
-        if (angle < 0)
-            angle += 360;
-        setPosition(Angle.fromDegrees(angle));
-
+        fixAngle();
         updatePosition();
 
         if (!fileIOs.isEmpty())
             transferFiles();
     }
 
+    private void fixAngle() {
+        Angle position = getPosition();
+        var angle = position.toDegrees() % 360;
+        if (angle < 0)
+            angle += 360;
+        setPosition(Angle.fromDegrees(angle));
+    }
+
     private void transferFiles() {
+        checkInvalidTransfers();
+
+        if (fileIOs.isEmpty())
+            return;
+
+        int bytesOut = getBytesOut();
+        int bytesIn = getBytesIn();
+
+        doTransfer(bytesIn, bytesOut);
+    }
+
+    private void checkInvalidTransfers() {
         for (int i = 0; i < fileIOs.size(); i++) {
             FileIO fileIO = fileIOs.get(i);
 
@@ -48,13 +63,31 @@ public abstract class Satellite extends Entity {
                 i--;
             }
         }
+    }
 
-        if (fileIOs.isEmpty())
-            return;
+    private int getBytesIn() {
+        int numIn = 0;
+        for (int i = 0; i < fileIOs.size(); i++) {
+            FileIO fileIO = fileIOs.get(i);
+            if (fileIO.getDest().equals(this))
+                numIn++;
+        }
 
-        int bytesOut = getBytesOut();
-        int bytesIn = getBytesIn();
+        return maxBytesInPerMin / Math.max(1, numIn);
+    }
 
+    private int getBytesOut() {
+        int numOut = 0;
+        for (int i = 0; i < fileIOs.size(); i++) {
+            FileIO fileIO = fileIOs.get(i);
+            if (fileIO.getSource().equals(this))
+                numOut++;
+        }
+
+        return maxBytesOutPerMin / Math.max(1, numOut);
+    }
+
+    private void doTransfer(int bytesIn, int bytesOut) {
         for (int i = 0; i < fileIOs.size(); i++) {
             FileIO fileIO = fileIOs.get(i);
 
@@ -69,6 +102,7 @@ public abstract class Satellite extends Entity {
             fileIO.transferContent(numBytes);
 
             if (fileIO.isFileComplete()) {
+                onFinishTransfer(fileIO.getConnection(), fileIO.getFilename());
                 System.out.println("File Transfer Complete");
                 fileIOs.remove(i);
                 i--;
@@ -77,35 +111,14 @@ public abstract class Satellite extends Entity {
         }
     }
 
-    protected int getBytesIn() {
-        int numIn = 0;
-        for (int i = 0; i < fileIOs.size(); i++) {
-            FileIO fileIO = fileIOs.get(i);
-            if (fileIO.getDest().equals(this))
-                numIn++;
-        }
-
-        return maxBytesInPerMin / Math.max(1, numIn);
-    }
-
-    protected int getBytesOut() {
-        int numOut = 0;
-        for (int i = 0; i < fileIOs.size(); i++) {
-            FileIO fileIO = fileIOs.get(i);
-            if (fileIO.getSource().equals(this))
-                numOut++;
-        }
-
-        return maxBytesOutPerMin / Math.max(1, numOut);
-    }
-
     protected void onTeleport() {
         for (int i = 0; i < fileIOs.size(); i++) {
             FileIO fileIO = fileIOs.get(i);
-            if (fileIO.getSource() instanceof Device && fileIO.getDest() instanceof TeleportingSatellite)
+            if (fileIO.getSource() instanceof Device && fileIO.getDest() instanceof TeleportingSatellite
+                    && fileIO.getDest().equals(this))
                 corruptFile(fileIO);
 
-            if (fileIO.getSource() instanceof TeleportingSatellite)
+            if (fileIO.getSource() instanceof TeleportingSatellite && fileIO.getSource().equals(this))
                 instantDownload(fileIO);
 
             fileIOs.remove(fileIO);
@@ -116,7 +129,7 @@ public abstract class Satellite extends Entity {
     private void corruptFile(FileIO io) {
         System.out.println("Corrupting File");
         File f = io.getSource().getFile(io.getFilename());
-        String content = f.getAllContent();
+        String content = f.getContent();
         content = content.replaceAll("t", "");
         f.setContent(content);
 
@@ -129,7 +142,7 @@ public abstract class Satellite extends Entity {
         Entity dest = io.getDest();
         File destFile = dest.getFile(f.getName());
 
-        String content = f.getAllContent();
+        String content = f.getContent();
 
         content = content.replaceAll("t", "");
         destFile.setContent(content);
@@ -144,9 +157,25 @@ public abstract class Satellite extends Entity {
     }
 
     public boolean hasBandwidth() {
-        if (fileIOs.size() >= maxBytesInPerMin || fileIOs.size() >= maxBytesOutPerMin) {
-            return false;
+        int numIn = 0;
+        for (int i = 0; i < fileIOs.size(); i++) {
+            FileIO fileIO = fileIOs.get(i);
+            if (fileIO.getDest().equals(this))
+                numIn++;
         }
+
+        int numOut = 0;
+        for (int i = 0; i < fileIOs.size(); i++) {
+            FileIO fileIO = fileIOs.get(i);
+            if (fileIO.getSource().equals(this))
+                numOut++;
+        }
+
+        if (numIn >= maxBytesInPerMin)
+            return false;
+
+        if (numOut >= maxBytesOutPerMin)
+            return false;
 
         return true;
     }
@@ -186,4 +215,8 @@ public abstract class Satellite extends Entity {
      * Update Satellite Position
      */
     protected abstract void updatePosition();
+
+    protected void onFinishTransfer(Connection connection, String name) {
+
+    }
 }
