@@ -3,13 +3,11 @@ package unsw.blackout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Dictionary;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Hashtable;
 import java.util.List;
 
 import unsw.response.models.EntityInfoResponse;
-import unsw.response.models.FileInfoResponse;
 import unsw.utils.Angle;
 
 /**
@@ -87,9 +85,7 @@ public class BlackoutController {
         if (entity == null)
             return null;
 
-        Map<String, FileInfoResponse> fileResponses = entity.getFileResponses();
-        EntityInfoResponse response = new EntityInfoResponse(id, entity.getPosition(), entity.getHeight(),
-                entity.getType(), fileResponses);
+        EntityInfoResponse response = entity.getInfo();
 
         return response;
     }
@@ -97,8 +93,9 @@ public class BlackoutController {
     public void simulate() {
         // Loop through each satellite
         for (Entity e : Collections.list(entities.elements())) {
-            if (e instanceof Satellite)
+            if (e instanceof Satellite) {
                 ((Satellite) e).simulate();
+            }
         }
     }
 
@@ -121,7 +118,7 @@ public class BlackoutController {
         List<String> communicableEntities = new ArrayList<>();
 
         for (Entity e : Collections.list(entities.elements())) {
-            if (e.getId().equals(id))
+            if (e.equals(entity))
                 continue;
 
             if (entity instanceof Device && e instanceof Device)
@@ -185,38 +182,27 @@ public class BlackoutController {
     public void sendFile(String fileName, String fromId, String toId) throws FileTransferException {
         Entity source = entities.get(fromId);
 
-        File file = null;
-        for (Map.Entry<String, File> entry : source.getFiles().entrySet()) {
-            if (entry.getKey().equals(fileName)) {
-                file = entry.getValue();
-            }
-        }
-
-        if (file == null)
-            throw new FileTransferException.VirtualFileNotFoundException(fileName + " Not Found");
-
+        File file = source.getFiles().get(fileName);
         Entity dest = entities.get(toId);
 
-        for (Map.Entry<String, File> entry : dest.getFiles().entrySet()) {
-            if (entry.getKey().equals(fileName))
-                throw new FileTransferException.VirtualFileAlreadyExistsException(
-                        fileName + " Already Exists in " + toId);
-        }
-
-        Connection transfer = null;
-        try {
-            transfer = Helper.canTransfer(source, dest, file.getCompleteBytes());
-        } catch (FileTransferException e) {
-            throw e;
-        }
-
-        System.out.println("Connection: " + transfer.toString());
+        checkErrors(file, source, dest, fileName, toId);
+        Connection transfer = Helper.canTransfer(source, dest, file.getCompleteBytes());
 
         if (!transfer.canTransfer())
             return;
 
         Satellite satellite = (source instanceof Satellite) ? (Satellite) source : (Satellite) dest;
         satellite.startTransfer(transfer, file);
+    }
+
+    private void checkErrors(File file, Entity source, Entity dest, String fileName, String toId)
+            throws FileTransferException {
+        if (file == null)
+            throw new FileTransferException.VirtualFileNotFoundException(fileName + " Not Found");
+
+        var files = dest.getFiles();
+        if (files.get(fileName) != null)
+            throw new FileTransferException.VirtualFileAlreadyExistsException(fileName + " Already Exists in " + toId);
     }
 
     public void createDevice(String deviceId, String type, Angle position, boolean isMoving) {

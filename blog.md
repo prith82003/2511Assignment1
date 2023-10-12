@@ -1,4 +1,4 @@
-Week 1:
+Week 2 (18 - 23 September):
 This week I worked on the basis of the assignment and the basic structure of the entities.
 
 Entities:
@@ -28,14 +28,20 @@ could create a getInfo method in the file which returns a file response object t
 way, I can iterate through the hashmap and get all the file responses for each file in the entity.
 
 
+Week 3 (25 - 30 September):
+This week I completed functionality for task 1 and started considering how task 2 would work. I first decided to draft out the simulate function in 
+the satellites 
 
-Week 3:
-When I started this task I realised that all the satellites would have to be simulated, their position and file transfers. In order to achieve this
-I decided that each Satellite would have its own simulate function which takes care of all this. I didn't do the same for devices since in this task 
-there are no moving devices and they dont need to handle file transferring (since satellites can take care of this). Each satellite now has its own 
-function in which the position is updated. I created a simulate function in the base Satellite class which calls an updatePosition function and 
-transfer files function. I decided that the simulate function will be private to the Satellite class and the updatePosition function will be visible
-to the subclasses which can override it if they need to.
+I implemented most of the functionality of simulating the movement of the standard satellite, in order to get an early start on task 2, I decided to
+figure out how I was going to determine if two entites are in range and they can transfer. I created a helper file in which I stored helper functions.
+I have not considered how to handle relay connections just yet.
+
+Week 4 (2 - 7 October):
+In order to achieve different behaviours for each Satellite, I decided that each Satellite would have its own simulate function which takes care of all 
+this. I didn't do the same for devices since in this task there are no moving devices and they dont need to handle file transferring (since satellites 
+can take care of this). Each satellite now has its own function in which the position is updated. I created a simulate function in the base Satellite 
+class which calls an updatePosition function and transfer files function. I decided that the simulate function will be private to the Satellite class 
+and the updatePosition function will be visible to the subclasses which can override it if they need to.
 
 simulate():
 Recently, I realised that having a default updatePosition function in the base class was unnecessary and bad style, so I decided to remove it and 
@@ -50,12 +56,9 @@ List of the entities that exist in the system and add each entity to this list w
 
 communicableEntitiesInRange():
 When creating this function, I realised that it would be simple to just iterate through all the entities in the system and check if it can 
-communicate with the entity that is passed in. In order to maintain code readability, I decided to create a helper file which
-contains a function that checks if two entities can communicate with each other. This way, I can just call this function in the function.
+communicate with the entity that is passed in.
 
-
-
-Week 4:
+Week 5 (9 - 14 October):
 This week I decided to start on sendFile(). This function required me to think about how the file would be sent from one device to another, how I could
 keep track of all the different file transfers and the different behaviours associated with each file transfer. I had already created FileReader/Writer 
 classes but I recently realised integrating them into one class would make it more readable and concise.
@@ -64,3 +67,20 @@ files function which does the reading and writing in one go. The standard and te
 so I imlpemented a base transferFiles function in Satellite.java. I then created an onTeleport function in satellite which is only triggered by a 
 teleportingSatellite when it teleports. This onTeleport handles the functionality such as corrupting a file and instantly downloading a file.
 
+Revision to Task 1:
+I recently realised that having a list of satellites and devices was unnecessary, I modified the behaviour such that I only used the list of entities and I deleted the other two lists.
+
+Revision to Task 2:
+Previously I did not handle connections between entities efficently, I have now created a class called Connection which keeps track of the two entities
+in the connection, it has functions which allow you to get the two entities and also check if the connection is active. This object is used in FileIO
+class so it knows which two entities to transfer between. Doing my connections this way allows me to implement relay connections more efficiently.
+Initially, I had thought that relay connections were determined at the start of the transfer once and if the connection was interrupted in any way, the 
+connection would break and not attempt to find another relay in order to continue the transfer. 
+However, after checking the EdStem forum, I have realised that not only multiple relays can be used in a transfer, but, if the connection is 
+interrupted, a new/additional relay can be used to sustain the connection.
+ 
+In order to implement this, I created a recursive function in BlackoutController which tries to bridge the gap between the source and destination 
+entities by finding a relay connection. During each tick, FileIO checks if the connection is active, if it is broken, it tries to find a relay
+satellite in order to continue the connection. 
+
+I have also made some minor tweaks to some files and replaced some for loops with streams for greater readability.

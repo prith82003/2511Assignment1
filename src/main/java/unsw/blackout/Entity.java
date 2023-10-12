@@ -1,10 +1,11 @@
 package unsw.blackout;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import unsw.response.models.EntityInfoResponse;
 import unsw.response.models.FileInfoResponse;
 import unsw.utils.Angle;
 import unsw.utils.MathsHelper;
@@ -36,7 +37,11 @@ public abstract class Entity {
         return files.get(name);
     }
 
-    public Map<String, FileInfoResponse> getFileResponses() {
+    public EntityInfoResponse getInfo() {
+        return new EntityInfoResponse(id, position, height, getType(), getFileResponses());
+    }
+
+    private Map<String, FileInfoResponse> getFileResponses() {
         Map<String, FileInfoResponse> fileResponses = new Hashtable<>();
         for (Map.Entry<String, File> entry : files.entrySet()) {
             fileResponses.put(entry.getKey(), entry.getValue().getInfo());
@@ -45,15 +50,7 @@ public abstract class Entity {
     }
 
     public List<Entity> getEntitiesInRange(List<Entity> entities) {
-        List<Entity> entitiesInRange = new ArrayList<>();
-        for (Entity e : entities) {
-            if (e.getId().equals(id))
-                continue;
-
-            if (isInRange(e))
-                entitiesInRange.add(e);
-        }
-        return entitiesInRange;
+        return entities.stream().filter(e -> isInRange(e) && !e.equals(this)).collect(Collectors.toList());
     }
 
     private boolean isInRange(Entity e) {
