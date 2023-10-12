@@ -68,7 +68,8 @@ so I imlpemented a base transferFiles function in Satellite.java. I then created
 teleportingSatellite when it teleports. This onTeleport handles the functionality such as corrupting a file and instantly downloading a file.
 
 Revision to Task 1:
-I recently realised that having a list of satellites and devices was unnecessary, I modified the behaviour such that I only used the list of entities and I deleted the other two lists.
+I recently realised that having a list of satellites and devices was unnecessary, I modified the behaviour such that I only used the list of entities 
+and I deleted the other two lists.
 
 Revision to Task 2:
 Previously I did not handle connections between entities efficently, I have now created a class called Connection which keeps track of the two entities

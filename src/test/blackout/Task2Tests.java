@@ -9,7 +9,9 @@ import unsw.response.models.EntityInfoResponse;
 import unsw.response.models.FileInfoResponse;
 import unsw.utils.Angle;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static blackout.TestHelpers.assertListAreEqualIgnoringOrder;
 
@@ -104,4 +106,30 @@ public class Task2Tests {
 
         assertTrue(relSatInfo.getPosition().toDegrees() == 0, "Teleporting Satellite C Movement Failed");
     }
+
+    @Test
+    public void testCorrupt() {
+        var bc = new BlackoutController();
+
+        bc.createDevice("Device A", "HandheldDevice", Angle.fromDegrees(180));
+        bc.addFileToDevice("Device A", "Big File", "content".repeat(10));
+
+        bc.createSatellite("Tel Sat", "TeleportingSatellite", RADIUS_OF_JUPITER + 5_000, Angle.fromDegrees(178));
+        assertDoesNotThrow(() -> bc.sendFile("Big File", "Device A", "Tel Sat"), "File Send Failed");
+
+        bc.simulate(10);
+
+        var devInfo = bc.getInfo("Device A");
+        var telSatInfo = bc.getInfo("Tel Sat");
+
+        assertFalse(devInfo.getFiles().get("Big File").getData().contains("t"), "File Wasn't Corrupted");
+        assertTrue(telSatInfo.getFiles().size() == 0, "File Wasn't Deleted From Satellite");
+    }
+
+    @Test
+    public void testInstantDownload() {
+
+    }
+
+    // TODO: Check Relay Connections
 }
