@@ -132,30 +132,14 @@ public class BlackoutController {
     }
 
     public static boolean relaySatelliteInRange(Entity source, Entity dest) {
-        return relaySatelliteInRange(source, dest, false);
-    }
+        List<RelaySatellite> relays = new ArrayList<RelaySatellite>();
 
-    public static boolean relaySatelliteInRange(Entity source, Entity dest, boolean debug) {
-        List<RelaySatellite> relays = new ArrayList<>();
-        List<RelaySatellite> relayPath = new ArrayList<>();
-        var pathAvailable = checkRelayConnection(source, dest, relays, relayPath);
-        if (debug) {
-            System.out.print("Path Available: " + pathAvailable + ", " + source.getId() + " -> ");
-
-            for (RelaySatellite r : relayPath) {
-                System.out.print(r.getId() + " -> ");
-            }
-
-            System.out.println(dest.getId());
-        }
-
-        System.out.println("Checked Satellites: " + relays);
+        var pathAvailable = checkRelayConnection(source, dest, relays);
 
         return pathAvailable;
     }
 
-    private static boolean checkRelayConnection(Entity source, Entity dest, List<RelaySatellite> relays,
-            List<RelaySatellite> path) {
+    private static boolean checkRelayConnection(Entity source, Entity dest, List<RelaySatellite> relays) {
         for (Entity e : source.getEntitiesInRange(Collections.list(entities.elements()))) {
             if (e.getId().equals(dest.getId())) {
                 return true;
@@ -167,12 +151,9 @@ public class BlackoutController {
                     continue;
 
                 relays.add(relay);
-                path.add(relay);
 
-                if (checkRelayConnection(relay, dest, relays, path))
+                if (checkRelayConnection(relay, dest, relays))
                     return true;
-
-                path.remove(relay);
             }
         }
 
@@ -181,7 +162,6 @@ public class BlackoutController {
 
     public void sendFile(String fileName, String fromId, String toId) throws FileTransferException {
         Entity source = entities.get(fromId);
-
         File file = source.getFiles().get(fileName);
         Entity dest = entities.get(toId);
 

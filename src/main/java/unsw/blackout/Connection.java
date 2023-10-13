@@ -49,8 +49,6 @@ public final class Connection {
     }
 
     public boolean canTransferNow() {
-        System.out.println("Checking if Can Transfer");
-
         if (!BlackoutController.entityExists(source.getId()) || !BlackoutController.entityExists(dest.getId()))
             return false;
 

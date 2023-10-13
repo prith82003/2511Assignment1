@@ -128,8 +128,51 @@ public class Task2Tests {
 
     @Test
     public void testInstantDownload() {
+        var bc = new BlackoutController();
 
+        bc.createDevice("Device A", "HandheldDevice", Angle.fromDegrees(10));
+        bc.createSatellite("Tel Satellite", "TeleportingSatellite", RADIUS_OF_JUPITER + 10_000, Angle.fromDegrees(0));
+
+        String ogContent = "content".repeat(5);
+
+        bc.addFileToDevice("Device A", "Big File", ogContent);
+        assertDoesNotThrow(() -> bc.sendFile("Big File", "Device A", "Tel Satellite"), "File Send Failed");
+
+        while (bc.getInfo("Tel Satellite").getPosition().compareTo(Angle.fromDegrees(178)) == -1) {
+            bc.simulate();
+        }
+
+        System.out.println(bc.getInfo("Tel Satellite"));
+
+        bc.createDevice("Device B", "HandheldDevice", Angle.fromDegrees(180));
+        assertDoesNotThrow(() -> bc.sendFile("Big File", "Tel Satellite", "Device B"), "File Send 2 Failed");
+
+        bc.simulate(40);
+
+        var devInfo = bc.getInfo("Device B");
+        assertTrue(devInfo.getFiles().containsKey("Big File"), "instant download failed");
+
+        var content = devInfo.getFiles().get("Big File").getData();
+        System.out.println("Content: " + content);
+        assertFalse(content == ogContent, "t's not deleted");
     }
 
-    // TODO: Check Relay Connections
+    @Test
+    public void testRelayConnections() {
+        var bc = new BlackoutController();
+
+        bc.createDevice("Device A", "HandheldDevice", Angle.fromDegrees(10));
+
+        // Create 5 relay satellites each differing by 20 degrees at height jupiter + 5000
+        for (int i = 0; i < 5; i++) {
+            bc.createSatellite("Relay Satellite " + i, "RelaySatellite", RADIUS_OF_JUPITER + 5_000,
+                    Angle.fromDegrees(20 * i));
+        }
+
+        bc.createSatellite("sat", "StandardSatellite", RADIUS_OF_JUPITER + 10_000, Angle.fromDegrees(70));
+        var commEntities = bc.communicableEntitiesInRange("Device A");
+
+        assertListAreEqualIgnoringOrder(commEntities, Arrays.asList("Relay Satellite 0", "Relay Satellite 1",
+                "Relay Satellite 2", "Relay Satellite 3", "Relay Satellite 4", "sat"));
+    }
 }

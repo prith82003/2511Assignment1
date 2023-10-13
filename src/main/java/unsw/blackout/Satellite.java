@@ -57,7 +57,6 @@ public abstract class Satellite extends Entity {
             FileIO fileIO = fileIOs.get(i);
 
             if (!fileIO.canTransfer()) {
-                System.out.println("File Transfer Failed");
                 fileIO.delete();
                 fileIOs.remove(i);
                 i--;
@@ -103,7 +102,6 @@ public abstract class Satellite extends Entity {
 
             if (fileIO.isFileComplete()) {
                 onFinishTransfer(fileIO.getConnection(), fileIO.getFilename());
-                System.out.println("File Transfer Complete");
                 fileIOs.remove(i);
                 i--;
                 continue;
@@ -127,7 +125,6 @@ public abstract class Satellite extends Entity {
     }
 
     private void corruptFile(FileIO io) {
-        System.out.println("Corrupting File");
         File f = io.getSource().getFile(io.getFilename());
         String content = f.getContent();
         content = content.replaceAll("t", "");
@@ -137,15 +134,13 @@ public abstract class Satellite extends Entity {
     }
 
     private void instantDownload(FileIO io) {
-        System.out.println("Instant Download");
         File f = io.getSource().getFile(io.getFilename());
         Entity dest = io.getDest();
         File destFile = dest.getFile(f.getName());
 
-        String content = f.getContent();
-
+        String content = io.getRemainingContent();
         content = content.replaceAll("t", "");
-        destFile.setContent(content);
+        destFile.appendContent(content);
     }
 
     public void startTransfer(Connection connection, File f) {

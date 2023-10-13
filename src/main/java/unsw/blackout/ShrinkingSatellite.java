@@ -10,12 +10,9 @@ public class ShrinkingSatellite extends StandardSatellite {
 
     @Override
     protected void onFinishTransfer(Connection connection, String name) {
-        if (connection.getDest().equals(this)) {
-            System.out.println("File: " + name + " has been zipped in: " + getId());
+        if (connection.getDest().equals(this))
             getFile(name).setContent(ZippedFileUtils.zipFile(getFile(name).getContent()), false);
-        } else if (!(connection.getDest() instanceof ShrinkingSatellite)) {
-            System.out.println("File: " + name + " has been unzipped in: " + connection.getDest().getId());
+        else if (!(connection.getDest() instanceof ShrinkingSatellite))
             connection.getDest().getFile(name).setContent(ZippedFileUtils.unzipFile(getFile(name).getContent()));
-        }
     }
 }

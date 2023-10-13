@@ -29,6 +29,10 @@ public final class FileIO {
         return connection;
     }
 
+    public String getRemainingContent() {
+        return sourceFile.getContent(offset, sourceFile.getCompleteBytes());
+    }
+
     public void transferContent(int numBytes) {
         write(read(numBytes));
     }

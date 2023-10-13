@@ -39,7 +39,6 @@ public class File {
     }
 
     public void setContent(String content, boolean changeCompleteBytes) {
-        System.out.println("Content Set to: " + content);
         this.content = content;
 
         if (changeCompleteBytes)
@@ -56,5 +55,10 @@ public class File {
 
     public FileInfoResponse getInfo() {
         return new FileInfoResponse(this.name, this.content, this.completeBytes, this.isFinished());
+    }
+
+    @Override
+    public String toString() {
+        return "File [completeBytes=" + completeBytes + ", content=" + content + ", name=" + name + "]";
     }
 }
