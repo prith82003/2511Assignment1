@@ -6,11 +6,11 @@ import java.util.List;
 import unsw.utils.Angle;
 
 public abstract class Satellite extends Entity {
-    protected final int linearVelocity;
-    protected final int maxFiles;
-    protected final int maxBytes;
-    protected final int maxBytesOutPerMin;
-    protected final int maxBytesInPerMin;
+    private final int linearVelocity;
+    private final int maxFiles;
+    private final int maxBytes;
+    private final int maxBytesOutPerMin;
+    private final int maxBytesInPerMin;
 
     private List<FileIO> fileIOs = new ArrayList<>();
 
@@ -22,6 +22,10 @@ public abstract class Satellite extends Entity {
         this.maxBytes = maxBytes;
         this.maxBytesInPerMin = bytesIn;
         this.maxBytesOutPerMin = bytesOut;
+    }
+
+    protected int getLinearVelocity() {
+        return linearVelocity;
     }
 
     public void simulate() {

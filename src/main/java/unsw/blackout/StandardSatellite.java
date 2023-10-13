@@ -17,7 +17,7 @@ public class StandardSatellite extends Satellite {
 
     @Override
     protected void updatePosition() {
-        double angularVelocity = linearVelocity / getHeight();
+        double angularVelocity = getLinearVelocity() / getHeight();
         Angle position = getPosition();
 
         position = position.subtract(Angle.fromRadians(angularVelocity));

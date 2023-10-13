@@ -22,7 +22,7 @@ public class TeleportingSatellite extends Satellite {
 
     @Override
     protected void updatePosition() {
-        double angularVelocity = Math.abs(linearVelocity / getHeight());
+        double angularVelocity = Math.abs(getLinearVelocity() / getHeight());
         Angle position = getPosition();
 
         if (moveAntiClockwise)

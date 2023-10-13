@@ -19,7 +19,7 @@ public class RelaySatellite extends Satellite {
 
     @Override
     protected void updatePosition() {
-        double angularVelocity = linearVelocity / getHeight();
+        double angularVelocity = getLinearVelocity() / getHeight();
         Angle position = getPosition();
 
         checkBounds(position);
